@@ -4,7 +4,7 @@
     <ProjectVersion>2.1</ProjectVersion>
     <DockerTargetOS>Linux</DockerTargetOS>
     <DockerPublishLocally>False</DockerPublishLocally>
-    <ProjectGuid>6ab3ecdf-0e79-4653-a809-5297da9c0be7</ProjectGuid>
+    <ProjectGuid>ae0ffd20-5d83-46a4-bd8d-3344c7ac3ae4</ProjectGuid>
     <DockerLaunchAction>LaunchBrowser</DockerLaunchAction>
     <DockerServiceUrl>{Scheme}://localhost:{ServicePort}/swagger</DockerServiceUrl>
     <DockerServiceName>bookmanager</DockerServiceName>

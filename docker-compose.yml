@@ -4,12 +4,25 @@ services:
     build:
       context: .
       dockerfile: BookManager/Dockerfile
+    ports:
+      - "8080:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Username=postgres;Password=1234;Database=postgres
+    depends_on:
+      - db
+
   db:
     image: postgres:latest
     container_name: bookmanagerPostgres
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=1234
-      - POSTGRES_DB=BookManager
+      - POSTGRES_DB=postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+
+volumes:
+  postgres-data:
