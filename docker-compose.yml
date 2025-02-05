@@ -1,0 +1,15 @@
+services:
+  bookmanager:
+    image: ${DOCKER_REGISTRY-}bookmanager
+    build:
+      context: .
+      dockerfile: BookManager/Dockerfile
+  db:
+    image: postgres:latest
+    container_name: bookmanagerPostgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=1234
+      - POSTGRES_DB=BookManager
+    ports:
+      - "5432:5432"
