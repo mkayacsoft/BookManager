@@ -1,4 +1,9 @@
-﻿using BookManager.Domain.Options;
+﻿using BookManager.Application.Contracts.Persistence;
+using BookManager.Domain.Options;
+using BookManager.Persistence.Authors;
+using BookManager.Persistence.Books;
+using BookManager.Persistence.Interceptors;
+using BookManager.Persistence.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,7 +22,13 @@ namespace BookManager.Persistence.Extensions
                     {
                         postgreSqlServerAction.MigrationsAssembly(typeof(PersistenceAssembly).Assembly.FullName);
                     });
+                options.AddInterceptors(new AuditDbContextInterceptor());
             });
+
+            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            services.AddScoped<IAuthorRepository, AuthorRepository>();
+            services.AddScoped<IBookRepository, BookRepository>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             return services;
         }
