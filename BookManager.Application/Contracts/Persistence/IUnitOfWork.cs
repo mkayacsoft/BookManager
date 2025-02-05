@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace BookManager.Application.Contracts.Persistence
 {
-    internal interface IUnitOfWork
+    public interface IUnitOfWork
     {
+
+        Task<int> SaveChangeAsync();
+
     }
 }

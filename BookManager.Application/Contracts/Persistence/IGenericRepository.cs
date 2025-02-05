@@ -1,12 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq.Expressions;
 
 namespace BookManager.Application.Contracts.Persistence
 {
-    internal interface IGenericRepository
+    public interface IGenericRepository<T> where T : class
     {
+        Task<List<T>> GetAll();
+        ValueTask<T?> GetById(int id);
+        ValueTask Create(T? entity);
+        void Update(T? entity);
+        void Delete(T entity);
+        Task<IQueryable<T?>> GetWhere(Expression<Func<T?, bool>> predicate);
     }
 }
