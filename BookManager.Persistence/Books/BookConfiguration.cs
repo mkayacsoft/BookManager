@@ -1,12 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using BookManager.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace BookManager.Persistence.Book
+namespace BookManager.Persistence.Books
 {
-    internal class BookConfiguration
+    public class BookConfiguration: IEntityTypeConfiguration<Book>
     {
+        public void Configure(EntityTypeBuilder<Book> builder)
+        {
+            builder.HasKey(C => C.Id);
+            builder.Property(c => c.Title).IsRequired().HasMaxLength(50);
+            builder.Property(c => c.Description).IsRequired().HasMaxLength(200);
+        }
     }
 }

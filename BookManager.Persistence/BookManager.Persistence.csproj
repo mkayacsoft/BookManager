@@ -19,8 +19,4 @@
     <ProjectReference Include="..\BookManager.Application\BookManager.Application.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Shared\" />
-  </ItemGroup>
-
 </Project>
