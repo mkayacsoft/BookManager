@@ -11,7 +11,7 @@ namespace BookManager.Domain.Entities
     {
         public string Title { get; set; } = null!;
         public string Description { get; set; } = null!;
-
+        public string ImageData { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
 
