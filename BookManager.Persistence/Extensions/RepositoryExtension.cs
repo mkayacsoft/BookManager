@@ -5,8 +5,10 @@ using BookManager.Persistence.Books;
 using BookManager.Persistence.Interceptors;
 using BookManager.Persistence.Shared;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using RedisCacheOptions = BookManager.Domain.Options.RedisCacheOptions;
 
 namespace BookManager.Persistence.Extensions
 {

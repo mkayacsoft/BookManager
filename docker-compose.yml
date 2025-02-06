@@ -9,8 +9,10 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Username=postgres;Password=1234;Database=postgres
+      - Redis__ConnectionString=redis:6379
     depends_on:
       - db
+      - redis
 
   db:
     image: postgres:latest
@@ -23,6 +25,25 @@ services:
       - postgres-data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+ 
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+  redis-insight:
+    image: redislabs/redisinsight:latest
+    container_name: redis-insight
+    restart: always
+    ports:
+      - "5540:5540"
+    volumes:
+      - redis-insight-data:/db
+    depends_on:
+      - redis
 
 volumes:
   postgres-data:
+  redis-data:
+  redis-insight-data:

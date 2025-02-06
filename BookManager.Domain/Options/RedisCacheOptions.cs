@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace BookManager.Domain.Options
 {
-    internal class RedisCacheOptions
+    public class RedisCacheOptions
     {
+        public string ConnectionString { get; set; } // Redis bağlantı dizesi
+        public int CacheTimeoutMinutes { get; set; }
     }
 }

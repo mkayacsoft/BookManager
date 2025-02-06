@@ -1,4 +1,6 @@
 ﻿using System.Reflection;
+using BookManager.Application.Contracts.Persistence;
+using BookManager.Application.Features;
 using BookManager.Application.Features.Authors;
 using BookManager.Application.Features.Books;
 using FluentValidation;
@@ -14,6 +16,8 @@ namespace BookManager.Application.Extensions
         {
             services.AddScoped<IAuthorService, AuthorService>();
             services.AddScoped<IBookService, BookService>();
+            services.AddScoped<IRedisService, RedisService>();
+            
 
             services.AddAutoMapper(Assembly.GetExecutingAssembly());
             services.AddFluentValidationAutoValidation();

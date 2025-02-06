@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using BookManager.Application.Contracts.Persistence;
 using BookManager.Application.Features.Books.Create;
 using BookManager.Application.Features.Books.Dto;
@@ -12,21 +6,41 @@ using BookManager.Application.Features.Books.Update;
 using BookManager.Domain.Entities;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using System.Net;
 
 namespace BookManager.Application.Features.Books
 {
-    public class BookService(IBookRepository _bookRepository, IUnitOfWork _unitOfWork, IMapper _mapper,IWebHostEnvironment _webHostEnvironment) :IBookService
+    public class BookService(IBookRepository _bookRepository, IUnitOfWork _unitOfWork, IMapper _mapper,IWebHostEnvironment _webHostEnvironment,IRedisService _redisService) :IBookService
     {
         public async Task<ServiceResult<List<BookDto>>> GetAllAsync()
         {
+            const string cacheKey = "BookList";
+
+            var cacheData = await _redisService.GetFromCacheAsync<List<BookDto>>(cacheKey);
+            if (cacheData != null)
+            {
+                return ServiceResult<List<BookDto>>.Success(cacheData);
+            }
+
             var result = await _bookRepository.GetAll();
             var bookAsDto = _mapper.Map<List<BookDto>>(result);
+
+            await _redisService.SetCacheAsync(cacheKey, bookAsDto,TimeSpan.FromMinutes(30));
 
             return ServiceResult<List<BookDto>>.Success(bookAsDto);
         }
 
         public async  Task<ServiceResult<BookDto>> GetByIdAsync(Guid id)
         {
+
+            string cacheKey = $"Book-{id}";
+            var cacheData = await _redisService.GetFromCacheAsync<BookDto>(cacheKey);
+
+            if (cacheData != null)
+            {
+                return ServiceResult<BookDto>.Success(cacheData);
+            }
+
             var result = await _bookRepository.GetById(id);
             if (result == null)
             {
@@ -34,6 +48,8 @@ namespace BookManager.Application.Features.Books
             }
 
             var bookAsDto = _mapper.Map<BookDto>(result);
+
+            await _redisService.SetCacheAsync(cacheKey, bookAsDto, TimeSpan.FromMinutes(30));
 
             return ServiceResult<BookDto>.Success(bookAsDto);
 
@@ -49,6 +65,26 @@ namespace BookManager.Application.Features.Books
 
             await _bookRepository.Create(book);
             await _unitOfWork.SaveChangeAsync();
+
+            string cacheKey = $"Book-{book.Id}";
+
+            var bookAAsDto = _mapper.Map<BookDto>(book);
+
+            await _redisService.SetCacheAsync(cacheKey, bookAAsDto, TimeSpan.FromMinutes(30));
+
+            string allBooksCacheKey = "BookList";
+            
+            var cachedBooks = await _redisService.GetFromCacheAsync<List<BookDto>>(allBooksCacheKey);
+
+            if (cachedBooks != null)
+            {
+                cachedBooks.Add(bookAAsDto);
+                await _redisService.SetCacheAsync(allBooksCacheKey, cachedBooks, TimeSpan.FromMinutes(30));
+            }
+            else
+            {
+                await _redisService.SetCacheAsync(allBooksCacheKey, new List<BookDto> { bookAAsDto }, TimeSpan.FromMinutes(30));
+            }
 
             return ServiceResult<CreateBookResponse>.Success(new CreateBookResponse(book.Id));
         }
@@ -78,9 +114,36 @@ namespace BookManager.Application.Features.Books
 
         }
 
-        public Task<ServiceResult> UpdateAsync(Guid id, UpdateBookRequest bookRequest)
+        public async Task<ServiceResult> UpdateAsync(Guid id, UpdateBookRequest bookRequest)
         {
-            throw new NotImplementedException();
+            var book = await _bookRepository.GetById(id);
+
+            if (book is null)
+            {
+                return ServiceResult.Failure("Book not found",HttpStatusCode.NotFound);
+            }
+            _mapper.Map(bookRequest, book);
+            _bookRepository.Update(book);
+            await _unitOfWork.SaveChangeAsync();
+
+            string bookCachekEY = $"book_{book.Id}";
+            var bookAsDto = _mapper.Map<BookDto>(book);
+            await _redisService.SetCacheAsync(bookCachekEY, bookAsDto, TimeSpan.FromMinutes(10));
+
+            string allBooksCacheKey = "BookList";
+            var cachedBooks = await _redisService.GetFromCacheAsync<List<BookDto>>(allBooksCacheKey);
+
+            if (cachedBooks != null)
+            {
+                var index = cachedBooks.FindIndex(c => c.Id == book.Id);
+                if (index != -1)
+                {
+                    cachedBooks[index] = bookAsDto; // Güncellenmiş veriyi yerine koy
+                    await _redisService.SetCacheAsync(allBooksCacheKey, cachedBooks, TimeSpan.FromMinutes(10));
+                }
+            }
+
+            return ServiceResult.Success(HttpStatusCode.NoContent);
         }
 
         public async Task<ServiceResult> DeleteAsync(Guid id)
@@ -94,6 +157,18 @@ namespace BookManager.Application.Features.Books
 
             _bookRepository.Delete(result);
             _unitOfWork.SaveChangeAsync();
+
+            string bookCacheKey = $"book_{result.Id}";
+            await _redisService.RemoveCacheAsync(bookCacheKey);
+
+            string allBooksCacheKey = "BookList";
+            var cachedBooks = await _redisService.GetFromCacheAsync<List<BookDto>>(allBooksCacheKey);
+
+            if (cachedBooks != null)
+            {
+                cachedBooks.RemoveAll(c => c.Id == result.Id); // Silinen şirketi listeden kaldır
+                await _redisService.SetCacheAsync(allBooksCacheKey, cachedBooks, TimeSpan.FromMinutes(10));
+            }
 
             return ServiceResult.Success(HttpStatusCode.NoContent);
 
