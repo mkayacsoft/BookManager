@@ -25,6 +25,16 @@ namespace BookManager.Persistence.Extensions
                 options.AddInterceptors(new AuditDbContextInterceptor());
             });
 
+            // Redis cache options configuration
+            services.Configure<RedisCacheOptions>(configuration.GetSection("Redis"));
+
+            // Add Redis Cache with the configuration
+            services.AddStackExchangeRedisCache(options =>
+            {
+                var redisOptions = configuration.GetSection("Redis").Get<RedisCacheOptions>();
+                options.Configuration = redisOptions.ConnectionString;
+            });
+
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddScoped<IAuthorRepository, AuthorRepository>();
             services.AddScoped<IBookRepository, BookRepository>();
