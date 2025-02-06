@@ -8,6 +8,11 @@ using BookManager.Domain.Entities;
 namespace BookManager.Application.Contracts.Persistence
 {
     public interface IAuthorRepository: IGenericRepository<Author>
-    {
+    { 
+        Task<List<Author>> GetAllWithBookAsync();
+       
+
+        Task<Author> GetByIdWithBookAsync(Guid id);
+
     }
 }

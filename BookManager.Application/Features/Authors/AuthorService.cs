@@ -17,7 +17,7 @@ namespace BookManager.Application.Features.Authors
     {
         public async Task<ServiceResult<List<AuthorDto>>> GetAllAsync()
         {
-            var result = await _authorRepository.GetAll();
+            var result = await _authorRepository.GetAllWithBookAsync();
             var authorAsDto = _mapper.Map<List<AuthorDto>>(result);
 
             return ServiceResult<List<AuthorDto>>.Success(authorAsDto);
@@ -25,7 +25,7 @@ namespace BookManager.Application.Features.Authors
 
         public async Task<ServiceResult<AuthorDto>> GetByIdAsync(Guid id)
         {
-            var result = await _authorRepository.GetById(id);
+            var result = await _authorRepository.GetByIdWithBookAsync(id);
             if (result == null)
             {
                 return ServiceResult<AuthorDto>.Failure(" Author not found",HttpStatusCode.NotFound);

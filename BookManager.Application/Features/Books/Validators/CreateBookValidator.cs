@@ -13,9 +13,7 @@ namespace BookManager.Application.Features.Books.Validators
     {
         public CreateBookValidator()
         {
-            RuleFor(x => x.Genre)
-                .NotEmpty().WithMessage("Genre is required.")
-                .MaximumLength(30).WithMessage("Genre cannot exceed 30 characters.");
+           
 
             RuleFor(x => x.Title)
                 .NotEmpty().WithMessage("Title is required.")

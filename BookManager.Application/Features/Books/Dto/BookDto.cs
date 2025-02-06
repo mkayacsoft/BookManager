@@ -8,10 +8,9 @@ namespace BookManager.Application.Features.Books.Dto;
 
 public record BookDto(
     Guid Id,
-    string Genre, 
     string Title, 
     string Description,
     string ImageData, 
     DateTime CreatedAt,
-    DateTime UpdateAt);
+    DateTime UpdatedAt);
 

@@ -23,4 +23,8 @@
     <ProjectReference Include="..\BookManager.Persistence\BookManager.Persistence.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
+  </ItemGroup>
+
 </Project>

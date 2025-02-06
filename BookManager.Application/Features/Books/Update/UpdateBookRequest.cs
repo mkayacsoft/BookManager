@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace BookManager.Application.Features.Books.Update;
 
-public record UpdateBookRequest(string Genre,
-    string Title,
-    string Description,
+public record UpdateBookRequest(
+    string? Title,
+    string? Description,
     IFormFile? ImageData);
