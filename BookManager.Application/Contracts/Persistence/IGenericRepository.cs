@@ -5,7 +5,7 @@ namespace BookManager.Application.Contracts.Persistence
     public interface IGenericRepository<T> where T : class
     {
         Task<List<T>> GetAll();
-        ValueTask<T?> GetById(int id);
+        ValueTask<T?> GetById(Guid id);
         ValueTask Create(T? entity);
         void Update(T? entity);
         void Delete(T entity);

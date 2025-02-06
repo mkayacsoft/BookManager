@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using BookManager.Application.Features.Authors.Create;
 using BookManager.Application.Features.Authors.Dto;
+using BookManager.Application.Features.Authors.Update;
 
 namespace BookManager.Application.Features.Authors
 {
@@ -13,7 +14,7 @@ namespace BookManager.Application.Features.Authors
         Task<ServiceResult<List<AuthorDto>>> GetAllAsync();
         Task<ServiceResult<AuthorDto>> GetByIdAsync(Guid id);
         Task<ServiceResult<CreateAuthorResponse>> CreateAsync(CreateAuthorRequest author);
-        Task<ServiceResult> UpdateAsync(AuthorDto author);
+        Task<ServiceResult> UpdateAsync(Guid id,UpdateAuthorRequest authorRequest);
         Task<ServiceResult> DeleteAsync(Guid id);
 
 

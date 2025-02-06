@@ -14,7 +14,7 @@ namespace BookManager.Persistence.Shared
             return await _dbSet.ToListAsync();
         }
 
-        public async ValueTask<T?> GetById(int id)
+        public async ValueTask<T?> GetById(Guid id)
         {
             return await _dbSet.FindAsync(id);
         }

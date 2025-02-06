@@ -10,9 +10,8 @@ namespace BookManager.Persistence.Interceptors
         {
 
             { EntityState.Added, AddBehavior },
-
             { EntityState.Modified, ModifiedBehavior },
-
+            { EntityState.Deleted, (dbContext, entity) => { /* Silme durumunda audit yapma */ } }
         };
 
         private static void AddBehavior(DbContext dbContext, IBaseAuditEntity entity)

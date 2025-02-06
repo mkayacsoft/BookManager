@@ -11,9 +11,9 @@ namespace BookManager.Persistence.Authors
         {
             builder.HasKey(c => c.Id);
 
-            builder.Property(c => c.FirstName).IsRequired().HasMaxLength(50);
-            builder.Property(c => c.LastName).IsRequired().HasMaxLength(50);
-            builder.Property(c => c.Genre).IsRequired().HasMaxLength(50);
+            builder.Property(c => c.FirstName).HasMaxLength(50);
+            builder.Property(c => c.LastName).HasMaxLength(50);
+            builder.Property(c => c.Genre).HasMaxLength(50);
         }
 
     }

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BookManager.Application.Features.Books.Dto;
-using BookManager.Domain.Entities;
+﻿using BookManager.Application.Features.Books.Dto;
 
 namespace BookManager.Application.Features.Authors.Dto;
 
@@ -13,7 +7,7 @@ public record AuthorDto(
     string FirstName,
     string LastName,
     string Genre,
-    BookDto Book,
+    ICollection<BookDto> Books,
     DateTime CreatedAt,
     DateTime UpdatedAt);
  

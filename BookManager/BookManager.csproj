@@ -19,10 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\BookManager.Application\BookManager.Application.csproj" />
     <ProjectReference Include="..\BookManager.Persistence\BookManager.Persistence.csproj" />
   </ItemGroup>
