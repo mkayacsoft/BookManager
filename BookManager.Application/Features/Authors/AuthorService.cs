@@ -1,37 +1,51 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using BookManager.Application.Contracts.Persistence;
 using BookManager.Application.Features.Authors.Create;
 using BookManager.Application.Features.Authors.Dto;
 using BookManager.Application.Features.Authors.Update;
 using BookManager.Domain.Entities;
+using System.Net;
 
 namespace BookManager.Application.Features.Authors
 {
-    public class AuthorService(IAuthorRepository _authorRepository,IUnitOfWork _unitOfWork,IMapper _mapper): IAuthorService
+    public class AuthorService(IAuthorRepository _authorRepository,IUnitOfWork _unitOfWork,IMapper _mapper,IRedisService _redisService): IAuthorService
     {
         public async Task<ServiceResult<List<AuthorDto>>> GetAllAsync()
         {
+            const string cacheKey = "AuthorList";
+            var cacheData = await _redisService.GetFromCacheAsync<List<AuthorDto>>(cacheKey);
+            if (cacheData != null)
+            {
+                return ServiceResult<List<AuthorDto>>.Success(cacheData);
+            }
+
             var result = await _authorRepository.GetAllWithBookAsync();
             var authorAsDto = _mapper.Map<List<AuthorDto>>(result);
+
+            await _redisService.SetCacheAsync(cacheKey, authorAsDto, TimeSpan.FromMinutes(30));
 
             return ServiceResult<List<AuthorDto>>.Success(authorAsDto);
         }
 
         public async Task<ServiceResult<AuthorDto>> GetByIdAsync(Guid id)
         {
+            string cacheKey = $"Author-{id}";
+            var cacheData = await _redisService.GetFromCacheAsync<AuthorDto>(cacheKey);
+
+            if (cacheData != null)
+            {
+                return ServiceResult<AuthorDto>.Success(cacheData);
+            }
+
             var result = await _authorRepository.GetByIdWithBookAsync(id);
             if (result == null)
             {
                 return ServiceResult<AuthorDto>.Failure(" Author not found",HttpStatusCode.NotFound);
             }
-
             var authorAsDto = _mapper.Map<AuthorDto>(result);
+
+            await _redisService.SetCacheAsync(cacheKey, authorAsDto, TimeSpan.FromMinutes(30));
+
             return ServiceResult<AuthorDto>.Success(authorAsDto);
 
         }
@@ -42,6 +56,26 @@ namespace BookManager.Application.Features.Authors
 
             await _authorRepository.Create(author);
             await _unitOfWork.SaveChangeAsync();
+
+            string cacheKey = $"Author-{author.Id}";
+
+            var authorAsDto = _mapper.Map<AuthorDto>(author);
+
+            await _redisService.SetCacheAsync(cacheKey, authorAsDto, TimeSpan.FromMinutes(30));
+
+            string allAuthorsCacheKey = "AuthorList";
+
+            var cachedAuthors = await _redisService.GetFromCacheAsync<List<AuthorDto>>(allAuthorsCacheKey);
+
+            if (cachedAuthors != null)
+            {
+                cachedAuthors.Add(authorAsDto);
+                await _redisService.SetCacheAsync(allAuthorsCacheKey, cachedAuthors, TimeSpan.FromMinutes(30));
+            }
+            else
+            {
+                await _redisService.SetCacheAsync(allAuthorsCacheKey, new List<AuthorDto> { authorAsDto }, TimeSpan.FromMinutes(30));
+            }
 
             return ServiceResult<CreateAuthorResponse>.Success(new CreateAuthorResponse(author.Id));
         }
@@ -58,6 +92,26 @@ namespace BookManager.Application.Features.Authors
 
              _authorRepository.Update(author);
             await _unitOfWork.SaveChangeAsync();
+
+            string cacheKey = $"Author-{author.Id}";
+
+            var authorAsDto = _mapper.Map<AuthorDto>(author);
+
+            await _redisService.SetCacheAsync(cacheKey, authorAsDto, TimeSpan.FromMinutes(30));
+
+            string allAuthorsCacheKey = "AuthorList";
+
+            var cachedAuthors = await _redisService.GetFromCacheAsync<List<AuthorDto>>(allAuthorsCacheKey);
+
+            if (cachedAuthors != null)
+            {
+                var authorIndex = cachedAuthors.FindIndex(a => a.Id == author.Id);
+                if (authorIndex != -1)
+                {
+                    cachedAuthors[authorIndex] = authorAsDto;
+                    await _redisService.SetCacheAsync(allAuthorsCacheKey, cachedAuthors, TimeSpan.FromMinutes(30));
+                }
+            }
             return ServiceResult.Success(HttpStatusCode.NoContent);
         }
 
@@ -72,6 +126,23 @@ namespace BookManager.Application.Features.Authors
 
             _authorRepository.Delete(author);
             await _unitOfWork.SaveChangeAsync();
+
+            string cacheKey = $"Author-{author.Id}";
+            await _redisService.RemoveCacheAsync(cacheKey);
+
+            string allAuthorsCacheKey = "AuthorList";
+
+            var cachedAuthors = await _redisService.GetFromCacheAsync<List<AuthorDto>>(allAuthorsCacheKey);
+
+            if (cachedAuthors != null)
+            {
+                var authorIndex = cachedAuthors.FindIndex(a => a.Id == author.Id);
+                if (authorIndex != -1)
+                {
+                    cachedAuthors.RemoveAt(authorIndex);
+                    await _redisService.SetCacheAsync(allAuthorsCacheKey, cachedAuthors, TimeSpan.FromMinutes(30));
+                }
+            }
 
             return ServiceResult.Success(HttpStatusCode.NoContent);
         }
